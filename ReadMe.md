@@ -7,10 +7,11 @@ A tool that creates a method containing code equivalent to Linq and calls that m
   - Currently only arrays are supported.
   
 ## Intoroduction
-
-  1. Place an asmdef named Main in any parent folder.
-  2. Add *LinqPatcherAttribute.dll* to Assembly Definitions References.
-  3. Done.
+  
+  1. Download the latest from the [LinqPatcher/Release](https://github.com/aiczk/LinqPatcher/releases) page.
+  2. Place an asmdef named Main in any parent folder.
+  3. Add *LinqPatcherAttribute.dll* to Assembly Definitions References.
+  4. Done.
 
 Notation in the Code Editor.
 ```cs
@@ -35,7 +36,11 @@ private void Optimize()
  - Where
  - Select
 
-License
-----
+##Requirements
+ - Requires Unity2018.3 or later.
+ 
+##Release Notes
+See [here.](https://github.com/aiczk/LinqPatcher/releases)
 
-MIT
+##License
+[MIT License](https://github.com/aiczk/LinqPatcher/blob/master/License.txt)
