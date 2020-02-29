@@ -11,14 +11,20 @@ namespace _Script
         private Baa[] array = new Baa[10000];
         
         [Optimize]
-        private void Optimize()
+        private void Optimize(Baa[] arr)
         {
-            var num = array.Select(x => x.Index).Where(x => x % 2 == 0).Select(x => x * 2);
+            var num = arr.Select(x => x.Index).Where(x => x % 2 == 0).Select(x => x * 2);
         }
         
         private void NoOptimize()
         {
             var num = array.Select(x => x.Index).Where(x => x % 2 == 0).Select(x => x * 2);
+        }
+
+        //[Optimize]
+        private void FFA(Baa[] arr)
+        {
+            var s = arr.Select(x => x.Index);
         }
 
         private void Start()
@@ -33,7 +39,7 @@ namespace _Script
             Debug.Log($"Non : {stopWatch.Elapsed.ToString()}");
             
             stopWatch.Restart();
-            Optimize();
+            Optimize(array);
             stopWatch.Stop();
             Debug.Log($"Opt : {stopWatch.Elapsed.ToString()}");
         }

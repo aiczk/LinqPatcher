@@ -10,6 +10,8 @@ namespace LinqPatcher.Basics
     [InitializeOnLoad]
     internal static class AssemblyPostProcessor
     {
+        private static readonly string TargetModuleName = "Main";
+        
         static AssemblyPostProcessor()
         { 
             if (EditorApplication.isPlayingOrWillChangePlaymode)
@@ -27,7 +29,7 @@ namespace LinqPatcher.Basics
             try
             {
                 var readerParams = AssemblyHelper.ReadAndWrite();
-                var mainModule = AssemblyHelper.FindModule("Main", readerParams);
+                var mainModule = AssemblyHelper.FindModule(TargetModuleName, readerParams);
                 var l2MModule = AssemblyHelper.FindModule("LinqPatcherAttribute", readerParams);
                 var coreModule = AssemblyHelper.GetCoreModule();
                 Execute(mainModule, l2MModule, coreModule);
@@ -70,7 +72,7 @@ namespace LinqPatcher.Basics
                 }
             }
 
-            mainModule.Write("Main.dll");
+            mainModule.Write($"{TargetModuleName}.dll");
         }
     }
 }

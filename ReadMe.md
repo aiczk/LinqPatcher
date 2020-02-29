@@ -4,7 +4,7 @@ A tool that creates a method containing code equivalent to Linq and calls that m
 
   - Simply attach the *[Optimize]* attribute to the target method.
   - It can be used simply by attaching attributes.
-  - Currently only arrays are supported.
+  - Currently arrays and arguments are supported.
   
 ## Intoroduction
 
@@ -18,7 +18,7 @@ Notation in the Code Editor.
 [Optimize]
 private void Optimize()
 {
-    IEnumerable<int> num = array.Where(x => x % 2 == 0).Select(x => x * 2);
+	IEnumerable<int> num = array.Where(x => x % 2 == 0).Select(x => x * 2);
 }
 ```
 
@@ -27,7 +27,24 @@ Code called at runtime.
 [Optimize]
 private void Optimize()
 {
-    IEnumerable<int> enumerable = e242dad72e884682a5f8424598974110(array);
+	IEnumerable<int> enumerable = e242dad72e884682a5f8424598974110(array);
+}
+
+private IEnumerable<int> e242dad72e884682a5f8424598974110(int[] P_0)
+{
+	if (linq_e242dad72e884682a5f8424598974110.Count > 0)
+		linq_e242dad72e884682a5f8424598974110.Clear();
+
+	foreach (int P_1 in P_0)
+	{
+		if (P_1 % 2 != 0)
+		{
+			P_1 *= 2;
+			linq_e242dad72e884682a5f8424598974110.Add(P_1);
+		}
+	}
+
+	return linq_e242dad72e884682a5f8424598974110;
 }
 ```
 

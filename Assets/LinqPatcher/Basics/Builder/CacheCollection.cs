@@ -17,7 +17,7 @@ namespace LinqPatcher.Basics.Builder
         private FieldDefinition list;
         private GenericInstanceType iEnumerable;
 
-        private MethodReference ctor;
+        private MethodReference listCtor;
         private MethodReference add;
         private MethodReference getCount;
         private MethodReference clear;
@@ -29,7 +29,7 @@ namespace LinqPatcher.Basics.Builder
             typeSystem = systemModule.TypeSystem;
             
             var methods = systemModule.GetType("System.Collections.Generic", "List`1").Methods;
-            ctor = methods.Single(x => x.Name == ".ctor" && x.Parameters.Count == 0);
+            listCtor = methods.Single(x => x.Name == ".ctor" && x.Parameters.Count == 0);
             add = methods.Single(x => x.Name == "Add");
             getCount = methods.Single(x => x.Name == "get_Count");
             clear = methods.Single(x => x.Name == "Clear");
@@ -39,17 +39,17 @@ namespace LinqPatcher.Basics.Builder
 
         public void Constructor(TypeDefinition targetClass, TypeReference argument)
         {
-            //todo .ctorがない場合
-            var classCtor = targetClass.Methods.Single(x => x.Name == ".ctor");
-            var methodBody = classCtor.Body;
+            if (!ExistConstructor(targetClass, out var ctor)) 
+                ctor = DefineConstructor(targetClass);
             
-            ctor = mainModule.ImportReference(ctor.Resolve().MakeGeneric(argument));
+            listCtor = mainModule.ImportReference(listCtor.Resolve().MakeGeneric(argument));
 
-            var first = methodBody.Instructions.First();
-            var processor = methodBody.GetILProcessor();
+            var ctorBody = ctor.Body;
+            var first = ctorBody.Instructions.First();
+            var processor = ctorBody.GetILProcessor();
             
             processor.InsertBefore(first, Instruction.Create(OpCodes.Ldarg_0));
-            processor.InsertBefore(first, Instruction.Create(OpCodes.Newobj, ctor));
+            processor.InsertBefore(first, Instruction.Create(OpCodes.Newobj, listCtor));
             processor.InsertBefore(first, Instruction.Create(OpCodes.Stfld, list));
         }
 
@@ -127,6 +127,40 @@ namespace LinqPatcher.Basics.Builder
             var result = mainModule.ImportReference(type);
             
             return result;
+        }
+
+        private bool ExistConstructor(TypeDefinition typeDefinition, out MethodDefinition ctor)
+        {
+            ctor = null;
+            var result = false;
+            foreach (var method in typeDefinition.Methods)
+            {
+                if(method.Name != ".ctor")
+                    continue;
+
+                ctor = method;
+                result = true;
+                break;
+            }
+
+            return result;
+        }
+
+        private MethodDefinition DefineConstructor(TypeDefinition typeDefinition)
+        {
+            var ctor = new MethodDefinition
+            (
+                ".ctor",
+                MethodAttributes.HideBySig |
+                MethodAttributes.SpecialName |
+                MethodAttributes.RTSpecialName |
+                MethodAttributes.Public,
+                typeSystem.Void
+            );
+            
+            typeDefinition.Methods.Add(ctor);
+
+            return ctor;
         }
     }
 }

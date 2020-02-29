@@ -1,6 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Debug = UnityEngine.Debug;
 
 namespace LinqPatcher.Basics.Analyzer
 {
@@ -16,7 +19,7 @@ namespace LinqPatcher.Basics.Analyzer
         {
             this.methodBody = methodBody;
         }
-
+        
         public void RemoveSection()
         {
             var list = new List<Instruction>();
@@ -24,42 +27,18 @@ namespace LinqPatcher.Basics.Analyzer
             foreach (var instruction in methodBody.Instructions)
             {
                 var opCode = instruction.OpCode;
-
-                if (opCode == OpCodes.Nop)
-                {
-                    var next = instruction.Next;
-
-                    if (next.OpCode == OpCodes.Ldarg_0)
-                    {
-                        nop = instruction;
-                    }
-                }
-
+                
+                if(nop == null)
+                    FindNop(instruction);
+                
                 //field
-                if (opCode == OpCodes.Ldarg_0)
-                {
-                    var next = instruction.Next;
+                if (flag == false && Field(instruction))
+                    flag = true;
 
-                    if (next.OpCode == OpCodes.Ldfld)
-                    {
-                        flag = true;
-                        ldfld = next;
-                    }
-                }
-
-                //new
-//                if (opCode == OpCodes.Ldloc_0 || opCode == OpCodes.Ldloc_1 || 
-//                    opCode == OpCodes.Ldloc_2 || opCode == OpCodes.Ldloc_3 ||
-//                    opCode == OpCodes.Ldloc_S)
-//                {
-//                    var next = instruction.Next;
-//
-//                    if (next.OpCode != OpCodes.Ldsfld)
-//                    {
-//                        flag = true;
-//                    }
-//                }
-
+                //arg
+                if (flag == false && Arg(instruction))
+                    flag = true;
+                
                 if (opCode == OpCodes.Stloc_0 || opCode == OpCodes.Stloc_1 ||
                     opCode == OpCodes.Stloc_2 || opCode == OpCodes.Stloc_3 ||
                     opCode == OpCodes.Stloc_S)
@@ -86,6 +65,52 @@ namespace LinqPatcher.Basics.Analyzer
             }
         }
 
+        private void FindNop(Instruction instruction)
+        {
+            var opCode = instruction.OpCode;
+            if (opCode != OpCodes.Nop)
+                return;
+            
+            var next = instruction.Next;
+
+            if (next.OpCode != OpCodes.Ldarg_0 &&
+                next.OpCode != OpCodes.Ldarg_1 && next.OpCode != OpCodes.Ldarg_2 &&
+                next.OpCode != OpCodes.Ldarg_3 && next.OpCode != OpCodes.Ldarg_S) 
+                return;
+            
+            nop = instruction;
+        }
+
+        private bool Field(Instruction instruction)
+        {
+            if (instruction.OpCode != OpCodes.Ldarg_0)
+                return false;
+            
+            var next = instruction.Next;
+
+            if (next.OpCode != OpCodes.Ldfld)
+                return false;
+            
+            ldfld = next;
+            return true;
+        }
+        
+        private bool Arg(Instruction instruction)
+        {
+            var opCode = instruction.OpCode;
+            if (opCode != OpCodes.Ldarg_1 && opCode != OpCodes.Ldarg_2 && opCode != OpCodes.Ldarg_3 &&
+                opCode != OpCodes.Ldarg_S) 
+                return false;
+            
+            var next = instruction.Next;
+            if (next.OpCode != OpCodes.Ldsfld)
+                return false;
+
+            ldfld = instruction;
+            return true;
+
+        }
+
         public void Replace(MethodDefinition callMethod)
         {
             var processor = methodBody.GetILProcessor();
@@ -96,7 +121,6 @@ namespace LinqPatcher.Basics.Analyzer
             processor.InsertBefore(nop, Instruction.Create(OpCodes.Call, callMethod));
             processor.InsertBefore(nop, stLoc);
         }
-        
     }
 
     public enum CallType
