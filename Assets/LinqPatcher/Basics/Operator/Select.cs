@@ -32,7 +32,7 @@ namespace LinqPatcher.Basics.Operator
             converted = converted ?? InstructionHelper.ConvertFunction(funcMethod, forLoop);
             
             if (!TypeReferenceEquals(returnType, forLoop.LocalDefinition.VariableType))
-                forLoop.LocalDefinition = method.AddVariableDefinition(returnType);
+                forLoop.LocalDefinition = method.AddVariable(returnType);
             
             foreach (var instruction in converted)
             {

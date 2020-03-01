@@ -28,7 +28,7 @@ namespace LinqPatcher.Basics.Operator
 
         void ILinqOperator.Define(MethodBody method, Instruction jumpInstruction)
         {
-            var checkVariable = method.AddVariableDefinition(typeSystem.Boolean);
+            var checkVariable = method.AddVariable(typeSystem.Boolean);
             var processor = method.GetILProcessor();
             
             converted = converted ?? InstructionHelper.ConvertFunction(funcMethod, forLoop);

@@ -6,12 +6,12 @@ namespace LinqPatcher.Basics.Analyzer
 {
     public class ClassAnalyzer
     {
-        private ModuleDefinition moduleDefinition;
+        private ModuleDefinition mainModule;
         private TypeDefinition attribute;
 
-        public ClassAnalyzer(ModuleDefinition moduleDefinition, TypeDefinition attribute)
+        public ClassAnalyzer(ModuleDefinition mainModule, TypeDefinition attribute)
         {
-            this.moduleDefinition = moduleDefinition;
+            this.mainModule = mainModule;
             this.attribute = attribute;
         }
 
@@ -44,7 +44,7 @@ namespace LinqPatcher.Basics.Analyzer
             var classes = new Collection<TypeDefinition>();
             var attributeName = attribute.Name;
             
-            foreach (var classDefinition in moduleDefinition.Types)
+            foreach (var classDefinition in mainModule.Types)
             {
                 if(!classDefinition.IsClass)
                     continue;

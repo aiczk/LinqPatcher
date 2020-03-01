@@ -12,9 +12,9 @@ namespace LinqPatcher.Basics.Analyzer
     {
         private TypeSystem typeSystem;
 
-        public MethodAnalyzer(TypeSystem typeSystem)
+        public MethodAnalyzer(ModuleDefinition coreModule)
         {
-            this.typeSystem = typeSystem;
+            typeSystem = coreModule.TypeSystem;
         }
 
         public AnalyzedMethod Analyze(MethodDefinition method)
@@ -58,12 +58,9 @@ namespace LinqPatcher.Basics.Analyzer
             }
 
             return new AnalyzedMethod(operators.ToReadOnlyCollection());
-
-            T GetToken<T>(Instruction instruction) where T : class
-            {
-                return instruction.Operand as T;
-            }
         }
+
+        private static T GetToken<T>(Instruction instruction) where T : class => instruction.Operand as T;
 
         public ILinqOperator OperatorFactory(LinqOperator linqOperator, MethodBuilder methodBuilder)
         {

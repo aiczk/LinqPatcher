@@ -12,7 +12,7 @@ namespace LinqPatcher.Basics.Analyzer
         private MethodBody methodBody;
 
         private Instruction nop;
-        private Instruction ldfld;
+        private Instruction ldArray;
         private Instruction stLoc;
         
         public MethodReplacer(MethodBody methodBody)
@@ -91,22 +91,22 @@ namespace LinqPatcher.Basics.Analyzer
             if (next.OpCode != OpCodes.Ldfld)
                 return false;
             
-            ldfld = next;
+            ldArray = next;
             return true;
         }
         
         private bool Arg(Instruction instruction)
         {
             var opCode = instruction.OpCode;
-            if (opCode != OpCodes.Ldarg_1 && opCode != OpCodes.Ldarg_2 && opCode != OpCodes.Ldarg_3 &&
-                opCode != OpCodes.Ldarg_S) 
+            if (opCode != OpCodes.Ldarg_1 && opCode != OpCodes.Ldarg_2 &&
+                opCode != OpCodes.Ldarg_3 && opCode != OpCodes.Ldarg_S) 
                 return false;
             
             var next = instruction.Next;
             if (next.OpCode != OpCodes.Ldsfld)
                 return false;
 
-            ldfld = instruction;
+            ldArray = instruction;
             return true;
 
         }
@@ -117,16 +117,9 @@ namespace LinqPatcher.Basics.Analyzer
 
             processor.InsertBefore(nop, Instruction.Create(OpCodes.Ldarg_0));
             processor.InsertBefore(nop, Instruction.Create(OpCodes.Ldarg_0));
-            processor.InsertBefore(nop, ldfld);
+            processor.InsertBefore(nop, ldArray);
             processor.InsertBefore(nop, Instruction.Create(OpCodes.Call, callMethod));
             processor.InsertBefore(nop, stLoc);
         }
-    }
-
-    public enum CallType
-    {
-        Field,
-        Argument,
-        Local
     }
 }

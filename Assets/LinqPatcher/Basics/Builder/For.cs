@@ -25,7 +25,7 @@ namespace LinqPatcher.Basics.Builder
 
         public void Start(MethodBody methodBody, int initValue = 0)
         {
-            indexDefinition = methodBody.AddVariableDefinition(typeSystem.Int32);
+            indexDefinition = methodBody.AddVariable(typeSystem.Int32);
             loopCheck = InstructionHelper.LdLoc(indexDefinition);
             IncrementIndex = InstructionHelper.LdLoc(indexDefinition);
             var processor = methodBody.GetILProcessor();
@@ -43,7 +43,7 @@ namespace LinqPatcher.Basics.Builder
         
         public void End(MethodBody methodBody)
         {
-            var withInVariable = methodBody.AddVariableDefinition(typeSystem.Boolean);
+            var withInVariable = methodBody.AddVariable(typeSystem.Boolean);
             var processor = methodBody.GetILProcessor();
 
             //loop end
@@ -73,7 +73,7 @@ namespace LinqPatcher.Basics.Builder
 
         public void DefineLocal(MethodBody methodBody, TypeReference argType)
         { 
-            LocalDefinition = methodBody.AddVariableDefinition(argType);
+            LocalDefinition = methodBody.AddVariable(argType);
             var processor = methodBody.GetILProcessor();
             
             processor.Append(InstructionHelper.LdArg(1));

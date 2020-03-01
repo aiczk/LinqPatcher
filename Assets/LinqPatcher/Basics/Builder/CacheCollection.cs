@@ -28,21 +28,36 @@ namespace LinqPatcher.Basics.Builder
             this.mainModule = mainModule;
             typeSystem = systemModule.TypeSystem;
             
-            var methods = systemModule.GetType("System.Collections.Generic", "List`1").Methods;
-            listCtor = methods.Single(x => x.Name == ".ctor" && x.Parameters.Count == 0);
-            add = methods.Single(x => x.Name == "Add");
-            getCount = methods.Single(x => x.Name == "get_Count");
-            clear = methods.Single(x => x.Name == "Clear");
+            var listMethods = systemModule.GetType("System.Collections.Generic", "List`1").Methods;
+            listCtor = listMethods.Single(x => x.Name == ".ctor" && x.Parameters.Count == 0);
+            add = listMethods.Single(x => x.Name == "Add");
+            getCount = listMethods.Single(x => x.Name == "get_Count");
+            clear = listMethods.Single(x => x.Name == "Clear");
 
             Add = Instruction.Create(OpCodes.Ldarg_0);
         }
 
-        public void Constructor(TypeDefinition targetClass, TypeReference argument)
+        public void Create(TypeDefinition targetClass, string fieldName, TypeReference argument)
         {
-            if (!ExistConstructor(targetClass, out var ctor)) 
-                ctor = DefineConstructor(targetClass);
+            var listInstance = Import("System.Collections.Generic", "List`1").MakeGenericInstanceType(argument);
+            iEnumerable = Import("System.Collections.Generic", "IEnumerable`1").MakeGenericInstanceType(argument);
+
+            add = mainModule.ImportReference(add.MakeGeneric(argument));
+            getCount = mainModule.ImportReference(getCount.MakeGeneric(argument));
+            clear = mainModule.ImportReference(clear.MakeGeneric(argument));
+
+            list = new FieldDefinition(fieldName, FieldAttributes.Private, listInstance);
+            targetClass.Fields.Add(list);
+
+            InitList(targetClass, argument);
+        }
+        
+        private void InitList(TypeDefinition targetClass, TypeReference argument)
+        {
+            if (!targetClass.HasConstructors(out var ctor)) 
+                ctor = targetClass.DefineConstructor(typeSystem);
             
-            listCtor = mainModule.ImportReference(listCtor.Resolve().MakeGeneric(argument));
+            listCtor = mainModule.ImportReference(listCtor.MakeGeneric(argument));
 
             var ctorBody = ctor.Body;
             var first = ctorBody.Instructions.First();
@@ -53,22 +68,9 @@ namespace LinqPatcher.Basics.Builder
             processor.InsertBefore(first, Instruction.Create(OpCodes.Stfld, list));
         }
 
-        public void InitField(TypeDefinition targetClass, string fieldName, TypeReference argument)
-        {
-            var listInstance = Import("System.Collections.Generic", "List`1").MakeGenericInstanceType(argument);
-            iEnumerable = Import("System.Collections.Generic", "IEnumerable`1").MakeGenericInstanceType(argument);
-
-            add = mainModule.ImportReference(add.Resolve().MakeGeneric(argument));
-            getCount = mainModule.ImportReference(getCount.Resolve().MakeGeneric(argument));
-            clear = mainModule.ImportReference(clear.Resolve().MakeGeneric(argument));
-
-            list = new FieldDefinition(fieldName, FieldAttributes.Private, listInstance);
-            targetClass.Fields.Add(list);
-        }
-
         public void Define(MethodBody methodBody)
         {
-            var boolean = methodBody.AddVariableDefinition(typeSystem.Boolean);
+            var boolean = methodBody.AddVariable(typeSystem.Boolean);
             var processor = methodBody.GetILProcessor();
             var jumpLabel = Instruction.Create(OpCodes.Nop);
             
@@ -102,6 +104,8 @@ namespace LinqPatcher.Basics.Builder
             processor.Append(Add);
             processor.Emit(OpCodes.Ldfld, list);
             processor.Append(InstructionHelper.LdLoc(local));
+            
+            //list.add(local);
             processor.Emit(OpCodes.Callvirt, add);
             processor.Emit(OpCodes.Nop);
             processor.Emit(OpCodes.Nop);
@@ -109,7 +113,7 @@ namespace LinqPatcher.Basics.Builder
 
         public void ReturnValue(MethodBody methodBody)
         {
-            var variable = methodBody.AddVariableDefinition(iEnumerable);
+            var variable = methodBody.AddVariable(iEnumerable);
             var processor = methodBody.GetILProcessor();
             
             processor.Emit(OpCodes.Ldarg_0);
@@ -127,40 +131,6 @@ namespace LinqPatcher.Basics.Builder
             var result = mainModule.ImportReference(type);
             
             return result;
-        }
-
-        private bool ExistConstructor(TypeDefinition typeDefinition, out MethodDefinition ctor)
-        {
-            ctor = null;
-            var result = false;
-            foreach (var method in typeDefinition.Methods)
-            {
-                if(method.Name != ".ctor")
-                    continue;
-
-                ctor = method;
-                result = true;
-                break;
-            }
-
-            return result;
-        }
-
-        private MethodDefinition DefineConstructor(TypeDefinition typeDefinition)
-        {
-            var ctor = new MethodDefinition
-            (
-                ".ctor",
-                MethodAttributes.HideBySig |
-                MethodAttributes.SpecialName |
-                MethodAttributes.RTSpecialName |
-                MethodAttributes.Public,
-                typeSystem.Void
-            );
-            
-            typeDefinition.Methods.Add(ctor);
-
-            return ctor;
         }
     }
 }

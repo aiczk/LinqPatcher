@@ -17,7 +17,7 @@ namespace LinqPatcher.Basics.Builder
         private MethodBody methodBody;
         private CacheCollection cacheCollection;
         private Queue<ILinqOperator> operators;
-        private TypeReference argType;
+        private TypeReference paramType;
         private MethodDefinition method;
         private Arg arg;
 
@@ -32,24 +32,25 @@ namespace LinqPatcher.Basics.Builder
 
         public void Create(TypeDefinition targetClass, string methodName, TypeReference paramsType, TypeReference returnType)
         {
+            //todo iEnumerable以外の返り値に対応する。
             var returnEnumerable = mainModule.ImportReference(typeof(IEnumerable<>)).MakeGenericInstanceType(returnType);
             method = new MethodDefinition(methodName, MethodAttributes.Private, returnEnumerable);
             targetClass.Methods.Add(method);
             
             arg.Define(method.Body, paramsType);
-            cacheCollection.InitField(targetClass, $"linq_{methodName}", returnType);
-            cacheCollection.Constructor(targetClass, returnType);
             
+            //todo 返り値がEnumerableなら定義する。
+            cacheCollection.Create(targetClass, $"linq_{methodName}", returnType);
+
             methodBody = method.Body;
-            argType = paramsType;
-            
+            paramType = paramsType;
         }
-        
+
         public void Begin()
         {
             cacheCollection.Define(methodBody);
             MainLoop.Start(methodBody);
-            MainLoop.DefineLocal(methodBody, argType);
+            MainLoop.DefineLocal(methodBody, paramType);
         }
 
         public void End()
