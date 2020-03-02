@@ -4,6 +4,7 @@ using LinqPatcher.Basics.Builder;
 using LinqPatcher.Basics.Operator;
 using LinqPatcher.Helpers;
 using Mono.Cecil;
+using Mono.Cecil.Rocks;
 using UnityEditor;
 using UnityEngine;
 
@@ -57,7 +58,10 @@ namespace LinqPatcher.Basics
                 {
                     var analyzedMethod = methodAnalyzer.Analyze(method);
 
-                    methodBuilder.Create(optimizeClass, MethodHelper.CreateUniqueName, analyzedMethod.ParameterType, analyzedMethod.ReturnType);
+                    var type = analyzedMethod.LastOperator.OperatorType.ReturnType();
+                    var returnType = mainModule.ImportReference(type).MakeGenericInstanceType(analyzedMethod.ReturnType);
+
+                    methodBuilder.Create(optimizeClass, MethodHelper.CreateUniqueName, analyzedMethod.ParameterType, returnType);
                     methodBuilder.Begin();
                     
                     foreach (var linqOperator in analyzedMethod.Operators)

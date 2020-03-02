@@ -33,14 +33,13 @@ namespace LinqPatcher.Basics.Builder
         public void Create(TypeDefinition targetClass, string methodName, TypeReference paramsType, TypeReference returnType)
         {
             //todo iEnumerable以外の返り値に対応する。
-            var returnEnumerable = mainModule.ImportReference(typeof(IEnumerable<>)).MakeGenericInstanceType(returnType);
-            method = new MethodDefinition(methodName, MethodAttributes.Private, returnEnumerable);
+            method = new MethodDefinition(methodName, MethodAttributes.Private, returnType);
             targetClass.Methods.Add(method);
             
             arg.Define(method.Body, paramsType);
             
             //todo 返り値がEnumerableなら定義する。
-            cacheCollection.Create(targetClass, $"linq_{methodName}", returnType);
+            cacheCollection.Create(targetClass, $"linq_{methodName}", ((GenericInstanceType)returnType).GenericArguments[0]);
 
             methodBody = method.Body;
             paramType = paramsType;
@@ -61,13 +60,7 @@ namespace LinqPatcher.Basics.Builder
             InstructionHelper.Return(methodBody);
         }
 
-        public void AppendOperator(ILinqOperator linqOperator)
-        {
-            if(linqOperator == null)
-                throw new NullReferenceException();
-            
-            operators.Enqueue(linqOperator);
-        }
+        public void AppendOperator(ILinqOperator linqOperator) => operators.Enqueue(linqOperator);
 
         public void BuildOperator()
         {

@@ -5,6 +5,7 @@ using LinqPatcher.Helpers;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Collections.Generic;
+using UnityEngine;
 
 namespace LinqPatcher.Basics.Analyzer
 {
@@ -20,7 +21,7 @@ namespace LinqPatcher.Basics.Analyzer
         public AnalyzedMethod Analyze(MethodDefinition method)
         {
             MethodDefinition nestedMethodToken = null;
-            OperatorType operatorTypeType = OperatorType.None;
+            var operatorType = OperatorType.None;
             
             var operators = new Collection<LinqOperator>();
 
@@ -44,17 +45,17 @@ namespace LinqPatcher.Basics.Analyzer
                     if(operatorMethodToken == null)
                         continue;
                     
-                    operatorTypeType = (OperatorType) Enum.Parse(typeof(OperatorType), operatorMethodToken.Name);
+                    operatorType = (OperatorType) Enum.Parse(typeof(OperatorType), operatorMethodToken.Name);
                 }
 
-                if (nestedMethodToken == null || operatorTypeType == OperatorType.None)
+                if (nestedMethodToken == null || operatorType == OperatorType.None)
                     continue;
 
-                var linqOperator = new LinqOperator(nestedMethodToken, operatorTypeType);
+                var linqOperator = new LinqOperator(nestedMethodToken, operatorType);
                 operators.Add(linqOperator);
 
                 nestedMethodToken = null;
-                operatorTypeType = OperatorType.None;
+                operatorType = OperatorType.None;
             }
 
             return new AnalyzedMethod(operators.ToReadOnlyCollection());
@@ -76,8 +77,7 @@ namespace LinqPatcher.Basics.Analyzer
                     break;
                 
                 default:
-                    op = null;
-                    break;
+                    throw new NotSupportedException($"{linqOperator.OperatorType.ToString()} is not supported.");
             }
 
             return op;
