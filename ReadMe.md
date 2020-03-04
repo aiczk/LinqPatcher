@@ -52,6 +52,7 @@ private IEnumerable<int> e242dad72e884682a5f8424598974110(int[] P_0)
 ## Currently supported operators
  - Where
  - Select
+ - ToList
  
 ## Releases Note
 See [here.](https://github.com/aiczk/LinqPatcher/releases)
