@@ -1,11 +1,5 @@
 ﻿namespace LinqPatcher.Basics.Operator
 {
-    public enum ReturnValueType
-    {
-        Enumerable,
-        Primitive
-    }
-    
     public enum OperatorType
     {
         None = -1,

@@ -122,7 +122,7 @@ namespace LinqPatcher.Helpers
 
         public static bool IsSupportedOperator(this OperatorType operatorType)
         {
-            var index = (int)operatorType;
+            var index = (int) operatorType;
             return index > -1 && index <= 13;
         }
     }

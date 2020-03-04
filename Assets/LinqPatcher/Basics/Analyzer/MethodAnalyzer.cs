@@ -74,6 +74,10 @@ namespace LinqPatcher.Basics.Analyzer
                     op = new Select(linqOperator.NestedMethod, methodBuilder.MainLoop);
                     break;
                 
+                case OperatorType.ToList:
+                    op = null;
+                    break;
+                
                 default:
                     throw new NotSupportedException($"{linqOperator.OperatorType.ToString()} is not supported.");
             }

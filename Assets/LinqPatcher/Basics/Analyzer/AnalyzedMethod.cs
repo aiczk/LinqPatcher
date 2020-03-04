@@ -4,6 +4,7 @@ using LinqPatcher.Helpers;
 using Mono.Cecil;
 using Mono.Cecil.Rocks;
 using Mono.Collections.Generic;
+using UnityEngine;
 
 namespace LinqPatcher.Basics.Analyzer
 {
@@ -11,11 +12,9 @@ namespace LinqPatcher.Basics.Analyzer
     {
         public TypeReference ParameterType => parameterType = parameterType ?? GetParameterType();
         public TypeReference ReturnType => returnType = returnType ?? GetReturnType();
-        public LinqOperator LastOperator => lastOperator = lastOperator ?? Operators.Last(x => x.OperatorType.IsSupportedOperator());
         public ReadOnlyCollection<LinqOperator> Operators { get; }
 
         private ModuleDefinition coreModule;
-        private LinqOperator lastOperator;
         private TypeReference parameterType;
         private TypeReference returnType;
 
@@ -32,14 +31,18 @@ namespace LinqPatcher.Basics.Analyzer
             return parameterDefinition.ParameterType;
         }
         
+        //todo correspond to the non-generic.
         private TypeReference GetReturnType()
         {
-            //IEnumerable<>の状態
-//            var type = LastOperator.OperatorType.ReturnType();
-//            var tr = new TypeReference(type.Namespace, type.Name, ModuleDefinition.ReadModule(type.Assembly.Location), coreModule);
+            var lastOperator = Operators.Last(x => x.OperatorType.IsSupportedOperator());
+            var type = lastOperator.OperatorType.ReturnType();
             
-            var methodReturnType = LastOperator.NestedMethod.ReturnType;
-            return methodReturnType;
+            var method = new TypeReference(type.Namespace, type.Name, ModuleDefinition.ReadModule(type.Assembly.Location), coreModule);
+            method.GenericParameters.Add(new GenericParameter(lastOperator.NestedMethod.ReturnType));
+            var generic = method.MakeGenericInstanceType(lastOperator.NestedMethod.ReturnType);
+
+            return generic;
         }
+        
     }
 }

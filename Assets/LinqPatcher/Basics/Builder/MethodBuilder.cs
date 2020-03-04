@@ -68,6 +68,9 @@ namespace LinqPatcher.Basics.Builder
             {
                 var linqOperator = operators.Dequeue();
                 
+                if(linqOperator == null)
+                    continue;
+                
                 if (linqOperator.Type == JumpType.Jump)
                 {
                     var nextOperator = operators.Count > 0 ? operators.Peek() : null;
