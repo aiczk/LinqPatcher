@@ -5,10 +5,10 @@ namespace LinqPatcher.Basics.Builder
 {
     public class LinqOperator
     {
-        public Operator.OperatorType OperatorType { get; }
+        public OperatorType OperatorType { get; }
         public MethodDefinition NestedMethod { get; }
         
-        public LinqOperator(MethodDefinition nestedMethod, Operator.OperatorType operatorType)
+        public LinqOperator(MethodDefinition nestedMethod, OperatorType operatorType)
         {
             NestedMethod = nestedMethod;
             OperatorType = operatorType;

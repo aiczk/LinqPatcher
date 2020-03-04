@@ -13,7 +13,7 @@ namespace _Script
         [Optimize]
         private void Optimize(Baa[] arr)
         {
-            var num = arr.Select(x => x.Index).Where(x => x % 2 == 0).Select(x => x * 2).OrderBy(x => x < 42);
+            var num = arr.Select(x => x.Index).Where(x => x % 2 == 0).Select(x => x * 2).ToList();
         }
         
         private void NoOptimize()

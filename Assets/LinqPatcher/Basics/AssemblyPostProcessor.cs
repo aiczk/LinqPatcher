@@ -59,9 +59,9 @@ namespace LinqPatcher.Basics
                     var analyzedMethod = methodAnalyzer.Analyze(method);
 
                     var type = analyzedMethod.LastOperator.OperatorType.ReturnType();
-                    var returnType = mainModule.ImportReference(type).MakeGenericInstanceType(analyzedMethod.ReturnType);
+                    var import = mainModule.ImportReference(type).MakeGenericInstanceType(analyzedMethod.ReturnType);
 
-                    methodBuilder.Create(optimizeClass, MethodHelper.CreateUniqueName, analyzedMethod.ParameterType, returnType);
+                    methodBuilder.Create(optimizeClass, MethodHelper.CreateUniqueName, analyzedMethod.ParameterType, import);
                     methodBuilder.Begin();
                     
                     foreach (var linqOperator in analyzedMethod.Operators)

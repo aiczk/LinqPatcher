@@ -32,7 +32,6 @@ namespace LinqPatcher.Basics.Builder
 
         public void Create(TypeDefinition targetClass, string methodName, TypeReference paramsType, TypeReference returnType)
         {
-            //todo iEnumerable以外の返り値に対応する。
             method = new MethodDefinition(methodName, MethodAttributes.Private, returnType);
             targetClass.Methods.Add(method);
             

@@ -39,8 +39,8 @@ namespace LinqPatcher.Basics.Builder
 
         public void Create(TypeDefinition targetClass, string fieldName, TypeReference argument)
         {
-            var listInstance = Import("System.Collections.Generic", "List`1").MakeGenericInstanceType(argument);
-            iEnumerable = Import("System.Collections.Generic", "IEnumerable`1").MakeGenericInstanceType(argument);
+            var listInstance = ImportAsGeneric("System.Collections.Generic", "List`1", argument);
+            iEnumerable = ImportAsGeneric("System.Collections.Generic", "IEnumerable`1", argument);
 
             add = mainModule.ImportReference(add.MakeGeneric(argument));
             getCount = mainModule.ImportReference(getCount.MakeGeneric(argument));
@@ -120,15 +120,15 @@ namespace LinqPatcher.Basics.Builder
             processor.Emit(OpCodes.Ldfld, list);
             processor.Append(InstructionHelper.StLoc(variable));
 
-            var fa = InstructionHelper.LdLoc(variable);
-            processor.Emit(OpCodes.Br_S, fa);
-            processor.Append(fa);
+            var loadEnumerable = InstructionHelper.LdLoc(variable);
+            processor.Emit(OpCodes.Br_S, loadEnumerable);
+            processor.Append(loadEnumerable);
         }
 
-        private TypeReference Import(string nameSpace, string name)
+        private GenericInstanceType ImportAsGeneric(string nameSpace, string name, TypeReference argument)
         {
             var type = systemModule.GetType(nameSpace, name);
-            var result = mainModule.ImportReference(type);
+            var result = mainModule.ImportReference(type).MakeGenericInstanceType(argument);
             
             return result;
         }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using LinqPatcher.Basics.Builder;
 using LinqPatcher.Basics.Operator;
 using LinqPatcher.Helpers;
@@ -11,10 +12,12 @@ namespace LinqPatcher.Basics.Analyzer
 {
     public class MethodAnalyzer
     {
+        private ModuleDefinition coreModule;
         private TypeSystem typeSystem;
 
         public MethodAnalyzer(ModuleDefinition coreModule)
         {
+            this.coreModule = coreModule;
             typeSystem = coreModule.TypeSystem;
         }
 
@@ -22,9 +25,10 @@ namespace LinqPatcher.Basics.Analyzer
         {
             MethodDefinition nestedMethodToken = null;
             var operatorType = OperatorType.None;
-            
+
             var operators = new Collection<LinqOperator>();
 
+            //返り値にできるっぽい型はキャッシュしておく
             foreach (var instruction in method.Body.Instructions)
             {
                 var opCode = instruction.OpCode;
@@ -41,24 +45,18 @@ namespace LinqPatcher.Basics.Analyzer
                 if (opCode == OpCodes.Call)
                 {
                     var operatorMethodToken = GetToken<GenericInstanceMethod>(instruction);
-                    
-                    if(operatorMethodToken == null)
+
+                    if (operatorMethodToken == null)
                         continue;
-                    
+
                     operatorType = (OperatorType) Enum.Parse(typeof(OperatorType), operatorMethodToken.Name);
                 }
 
-                if (nestedMethodToken == null || operatorType == OperatorType.None)
-                    continue;
-
                 var linqOperator = new LinqOperator(nestedMethodToken, operatorType);
                 operators.Add(linqOperator);
-
-                nestedMethodToken = null;
-                operatorType = OperatorType.None;
             }
 
-            return new AnalyzedMethod(operators.ToReadOnlyCollection());
+            return new AnalyzedMethod(coreModule, operators.ToReadOnlyCollection());
         }
 
         private static T GetToken<T>(Instruction instruction) where T : class => instruction.Operand as T;

@@ -9,21 +9,23 @@ namespace LinqPatcher.Basics.Analyzer
 {
     public class AnalyzedMethod
     {
-        public TypeReference ParameterType => parameterType = parameterType ?? GetArgType();
+        public TypeReference ParameterType => parameterType = parameterType ?? GetParameterType();
         public TypeReference ReturnType => returnType = returnType ?? GetReturnType();
         public LinqOperator LastOperator => lastOperator = lastOperator ?? Operators.Last(x => x.OperatorType.IsSupportedOperator());
         public ReadOnlyCollection<LinqOperator> Operators { get; }
-        
+
+        private ModuleDefinition coreModule;
         private LinqOperator lastOperator;
         private TypeReference parameterType;
         private TypeReference returnType;
 
-        public AnalyzedMethod(ReadOnlyCollection<LinqOperator> operators)
+        public AnalyzedMethod(ModuleDefinition coreModule, ReadOnlyCollection<LinqOperator> operators)
         {
+            this.coreModule = coreModule;
             Operators = operators;
         }
 
-        private TypeReference GetArgType()
+        private TypeReference GetParameterType()
         {
             var firstOperator = Operators.First();
             var parameterDefinition = firstOperator.NestedMethod.Parameters[0];
@@ -32,7 +34,10 @@ namespace LinqPatcher.Basics.Analyzer
         
         private TypeReference GetReturnType()
         {
-            var ffa = LastOperator.OperatorType.ReturnType();
+            //IEnumerable<>の状態
+//            var type = LastOperator.OperatorType.ReturnType();
+//            var tr = new TypeReference(type.Namespace, type.Name, ModuleDefinition.ReadModule(type.Assembly.Location), coreModule);
+            
             var methodReturnType = LastOperator.NestedMethod.ReturnType;
             return methodReturnType;
         }
