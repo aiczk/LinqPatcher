@@ -58,7 +58,7 @@ namespace LinqPatcher.Helpers
         }
         
         //todo generic
-        public static Type ReturnType(this OperatorType operatorType)
+        public static Type TypeOf(this OperatorType operatorType)
         {
             switch (operatorType)
             {

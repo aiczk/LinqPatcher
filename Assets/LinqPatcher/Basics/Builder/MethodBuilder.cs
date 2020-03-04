@@ -59,7 +59,13 @@ namespace LinqPatcher.Basics.Builder
             InstructionHelper.Return(methodBody);
         }
 
-        public void AppendOperator(ILinqOperator linqOperator) => operators.Enqueue(linqOperator);
+        public void AppendOperator(ILinqOperator linqOperator)
+        {
+            if (linqOperator == null)
+                return;
+            
+            operators.Enqueue(linqOperator);
+        }
 
         public void BuildOperator()
         {
@@ -67,9 +73,6 @@ namespace LinqPatcher.Basics.Builder
             for (var i = 0; i < count; i++)
             {
                 var linqOperator = operators.Dequeue();
-                
-                if(linqOperator == null)
-                    continue;
                 
                 if (linqOperator.Type == JumpType.Jump)
                 {

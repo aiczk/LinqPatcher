@@ -48,7 +48,7 @@ namespace LinqPatcher.Basics
             var l2MOptimizeAttribute = l2MModule.GetType("LinqPatcher.Attributes", "OptimizeAttribute");
             
             var classAnalyzer = new ClassAnalyzer(mainModule, l2MOptimizeAttribute);
-            var methodAnalyzer = new MethodAnalyzer(coreModule);
+            var methodAnalyzer = new MethodAnalyzer(mainModule);
             var methodBuilder = new MethodBuilder(mainModule, coreModule);
             
             var analyzedClass = classAnalyzer.Analyze();
@@ -58,9 +58,7 @@ namespace LinqPatcher.Basics
                 {
                     var analyzedMethod = methodAnalyzer.Analyze(method);
                     
-                    var returnType = mainModule.ImportReference(analyzedMethod.ReturnType);
-
-                    methodBuilder.Create(optimizeClass, MethodHelper.CreateUniqueName, analyzedMethod.ParameterType, returnType);
+                    methodBuilder.Create(optimizeClass, MethodHelper.CreateUniqueName, analyzedMethod.ParameterType, analyzedMethod.ReturnType);
                     methodBuilder.Begin();
                     
                     foreach (var linqOperator in analyzedMethod.Operators)

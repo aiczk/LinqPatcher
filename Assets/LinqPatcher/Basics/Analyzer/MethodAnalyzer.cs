@@ -12,13 +12,13 @@ namespace LinqPatcher.Basics.Analyzer
 {
     public class MethodAnalyzer
     {
-        private ModuleDefinition coreModule;
+        private ModuleDefinition mainModule;
         private TypeSystem typeSystem;
 
-        public MethodAnalyzer(ModuleDefinition coreModule)
+        public MethodAnalyzer(ModuleDefinition mainModule)
         {
-            this.coreModule = coreModule;
-            typeSystem = coreModule.TypeSystem;
+            this.mainModule = mainModule;
+            typeSystem = mainModule.TypeSystem;
         }
 
         public AnalyzedMethod Analyze(MethodDefinition method)
@@ -56,7 +56,7 @@ namespace LinqPatcher.Basics.Analyzer
                 operators.Add(linqOperator);
             }
 
-            return new AnalyzedMethod(coreModule, operators.ToReadOnlyCollection());
+            return new AnalyzedMethod(mainModule, operators.ToReadOnlyCollection());
         }
 
         private static T GetToken<T>(Instruction instruction) where T : class => instruction.Operand as T;

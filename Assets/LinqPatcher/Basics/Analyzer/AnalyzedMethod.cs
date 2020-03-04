@@ -14,13 +14,13 @@ namespace LinqPatcher.Basics.Analyzer
         public TypeReference ReturnType => returnType = returnType ?? GetReturnType();
         public ReadOnlyCollection<LinqOperator> Operators { get; }
 
-        private ModuleDefinition coreModule;
+        private ModuleDefinition mainModule;
         private TypeReference parameterType;
         private TypeReference returnType;
 
-        public AnalyzedMethod(ModuleDefinition coreModule, ReadOnlyCollection<LinqOperator> operators)
+        public AnalyzedMethod(ModuleDefinition mainModule, ReadOnlyCollection<LinqOperator> operators)
         {
-            this.coreModule = coreModule;
+            this.mainModule = mainModule;
             Operators = operators;
         }
 
@@ -35,13 +35,14 @@ namespace LinqPatcher.Basics.Analyzer
         private TypeReference GetReturnType()
         {
             var lastOperator = Operators.Last(x => x.OperatorType.IsSupportedOperator());
-            var type = lastOperator.OperatorType.ReturnType();
+            var type = lastOperator.OperatorType.TypeOf();
             
-            var method = new TypeReference(type.Namespace, type.Name, ModuleDefinition.ReadModule(type.Assembly.Location), coreModule);
+            var method = new TypeReference(type.Namespace, type.Name, ModuleDefinition.ReadModule(type.Assembly.Location), mainModule);
             method.GenericParameters.Add(new GenericParameter(lastOperator.NestedMethod.ReturnType));
-            var generic = method.MakeGenericInstanceType(lastOperator.NestedMethod.ReturnType);
+            var genericMethod = method.MakeGenericInstanceType(lastOperator.NestedMethod.ReturnType);
+            var importedMethod = mainModule.ImportReference(genericMethod);
 
-            return generic;
+            return importedMethod;
         }
         
     }
