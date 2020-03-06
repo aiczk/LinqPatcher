@@ -8,7 +8,7 @@ namespace LinqPatcher.Basics.Builder
     {
         public Instruction IncrementIndex { get; private set; }
         public VariableDefinition LocalDefinition { get; set; }
-        
+
         private VariableDefinition indexDefinition;
         private Instruction loopStart;
         private Instruction loopEnd;

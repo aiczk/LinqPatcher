@@ -12,7 +12,7 @@ namespace LinqPatcher.Basics.Analyzer
         private MethodBody methodBody;
 
         private Instruction nop;
-        private Instruction ldArray;
+        private Instruction ldEnumerable;
         private Instruction stLoc;
         
         public MethodReplacer(MethodBody methodBody)
@@ -91,7 +91,7 @@ namespace LinqPatcher.Basics.Analyzer
             if (next.OpCode != OpCodes.Ldfld)
                 return false;
             
-            ldArray = next;
+            ldEnumerable = next;
             return true;
         }
         
@@ -106,7 +106,7 @@ namespace LinqPatcher.Basics.Analyzer
             if (next.OpCode != OpCodes.Ldsfld)
                 return false;
 
-            ldArray = instruction;
+            ldEnumerable = instruction;
             return true;
 
         }
@@ -117,7 +117,7 @@ namespace LinqPatcher.Basics.Analyzer
 
             processor.InsertBefore(nop, Instruction.Create(OpCodes.Ldarg_0));
             processor.InsertBefore(nop, Instruction.Create(OpCodes.Ldarg_0));
-            processor.InsertBefore(nop, ldArray);
+            processor.InsertBefore(nop, ldEnumerable);
             processor.InsertBefore(nop, Instruction.Create(OpCodes.Call, callMethod));
             processor.InsertBefore(nop, stLoc);
         }

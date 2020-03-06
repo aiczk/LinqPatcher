@@ -1,10 +1,7 @@
-﻿using System;
-using LinqPatcher.Basics.Analyzer;
+﻿using LinqPatcher.Basics.Analyzer;
 using LinqPatcher.Basics.Builder;
-using LinqPatcher.Basics.Operator;
 using LinqPatcher.Helpers;
 using Mono.Cecil;
-using Mono.Cecil.Rocks;
 using UnityEditor;
 using UnityEngine;
 
@@ -16,34 +13,18 @@ namespace LinqPatcher.Basics
         private static readonly string TargetModuleName = "Main";
         
         static AssemblyPostProcessor()
-        { 
-            if (EditorApplication.isPlayingOrWillChangePlaymode)
-                return;
-            
-            PostCompile();
-        }
-
-        private static void PostCompile()
         {
-            if(!AssemblyHelper.ExistMainAssembly())
-                return;
-            
-            EditorApplication.LockReloadAssemblies();
-            try
+            AssemblyHelper.Executer(TargetModuleName, () =>
             {
-                var readerParams = AssemblyHelper.ReadAndWrite();
-                var mainModule = AssemblyHelper.FindModule(TargetModuleName, readerParams);
-                var l2MModule = AssemblyHelper.FindModule("LinqPatcherAttribute", readerParams);
+                var readerParam = AssemblyHelper.ReadAndWrite();
+                var mainModule = AssemblyHelper.FindModule(TargetModuleName, readerParam);
+                var l2MModule = AssemblyHelper.FindModule("LinqPatcherAttribute", readerParam);
                 var coreModule = AssemblyHelper.GetCoreModule();
-                Execute(mainModule, l2MModule, coreModule);
-            }
-            finally
-            {
-                EditorApplication.UnlockReloadAssemblies();
-            }
+                PostCompile(mainModule, l2MModule, coreModule);
+            });
         }
 
-        private static void Execute(ModuleDefinition mainModule, ModuleDefinition l2MModule, ModuleDefinition coreModule)
+        private static void PostCompile(ModuleDefinition mainModule, ModuleDefinition l2MModule, ModuleDefinition coreModule)
         {
             var l2MOptimizeAttribute = l2MModule.GetType("LinqPatcher.Attributes", "OptimizeAttribute");
             

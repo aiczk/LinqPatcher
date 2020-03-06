@@ -2,6 +2,8 @@
 using System.Linq;
 using System.Reflection;
 using Mono.Cecil;
+using UnityEditor;
+using UnityEngine;
 
 namespace LinqPatcher.Helpers
 {
@@ -14,9 +16,7 @@ namespace LinqPatcher.Helpers
             InMemory = true,
             ReadingMode = ReadingMode.Immediate
         };
-
-        public static bool ExistMainAssembly() => AppDomain.CurrentDomain.GetAssemblies().Any(x => x.GetName().Name == "Main");
-
+        
         public static ModuleDefinition FindModule(string assemblyName, ReaderParameters readerParameters)
         {
             var assembly = FindAssembly(assemblyName);
@@ -31,5 +31,24 @@ namespace LinqPatcher.Helpers
         }
         
         public static ModuleDefinition GetCoreModule() => ModuleDefinition.ReadModule(typeof(object).Module.FullyQualifiedName);
+        
+        public static void Executer(string moduleName, Action action)
+        {
+            if (EditorApplication.isPlayingOrWillChangePlaymode)
+                return;
+
+            if(AppDomain.CurrentDomain.GetAssemblies().All(x => x.GetName().Name != moduleName))
+                return;
+            
+            EditorApplication.LockReloadAssemblies();
+            try
+            {
+                action();
+            }
+            finally
+            {
+                EditorApplication.UnlockReloadAssemblies();
+            }
+        }
     }
 }

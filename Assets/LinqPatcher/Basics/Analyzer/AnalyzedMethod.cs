@@ -4,7 +4,6 @@ using LinqPatcher.Helpers;
 using Mono.Cecil;
 using Mono.Cecil.Rocks;
 using Mono.Collections.Generic;
-using UnityEngine;
 
 namespace LinqPatcher.Basics.Analyzer
 {
@@ -35,12 +34,19 @@ namespace LinqPatcher.Basics.Analyzer
         private TypeReference GetReturnType()
         {
             var lastOperator = Operators.Last(x => x.OperatorType.IsSupportedOperator());
-            var type = lastOperator.OperatorType.TypeOf();
+            var lastReturnType = lastOperator.OperatorType.TypeOf();
+
+            var module = ModuleDefinition.ReadModule(lastReturnType.Assembly.Location);
+            var methodReference = new TypeReference(lastReturnType.Namespace, lastReturnType.Name, module, mainModule);
+
+            if (lastReturnType.IsGenericType)
+            {
+                var nestedMethodReturnType = lastOperator.NestedMethod.ReturnType;
+                methodReference.GenericParameters.Add(new GenericParameter(nestedMethodReturnType));
+                methodReference = methodReference.MakeGenericInstanceType(nestedMethodReturnType);
+            }
             
-            var method = new TypeReference(type.Namespace, type.Name, ModuleDefinition.ReadModule(type.Assembly.Location), mainModule);
-            method.GenericParameters.Add(new GenericParameter(lastOperator.NestedMethod.ReturnType));
-            var genericMethod = method.MakeGenericInstanceType(lastOperator.NestedMethod.ReturnType);
-            var importedMethod = mainModule.ImportReference(genericMethod);
+            var importedMethod = mainModule.ImportReference(methodReference);
 
             return importedMethod;
         }

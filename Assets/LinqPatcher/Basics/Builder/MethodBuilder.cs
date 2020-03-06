@@ -6,6 +6,7 @@ using LinqPatcher.Helpers;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
+using UnityEngine;
 
 namespace LinqPatcher.Basics.Builder
 {
@@ -37,11 +38,14 @@ namespace LinqPatcher.Basics.Builder
             
             arg.Define(method.Body, paramsType);
             
-            //todo 返り値がEnumerableなら定義する。
-            cacheCollection.Create(targetClass, $"linq_{methodName}", ((GenericInstanceType)returnType).GenericArguments[0]);
-
             methodBody = method.Body;
             paramType = paramsType;
+
+            //if (!returnType.IsGenericInstance)
+            //    return;
+            
+            //((GenericInstanceType) returnType).GenericArguments[0]
+            cacheCollection.Create(targetClass, methodName, returnType);
         }
 
         public void Begin()

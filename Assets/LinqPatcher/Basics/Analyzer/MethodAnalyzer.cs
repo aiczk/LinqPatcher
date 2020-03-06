@@ -75,6 +75,12 @@ namespace LinqPatcher.Basics.Analyzer
                     break;
                 
                 case OperatorType.ToList:
+                case OperatorType.Count:
+                case OperatorType.Any:
+                case OperatorType.All:
+                case OperatorType.Contains:
+                case OperatorType.Average:
+                case OperatorType.LongCount:
                     op = null;
                     break;
                 

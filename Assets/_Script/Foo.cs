@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using LinqPatcher.Attributes;
 using UnityEngine;
@@ -8,7 +9,7 @@ namespace _Script
 {
     public class Foo : MonoBehaviour
     {
-        private Baa[] array = new Baa[10000];
+        private Baa[] array = new Baa[1000000];
         
         [Optimize]
         private void Optimize(Baa[] arr)
@@ -16,9 +17,9 @@ namespace _Script
             var num = arr.Select(x => x.Index).Where(x => x % 2 == 0).Select(x => x * 2).ToList();
         }
         
-        private void NoOptimize()
+        private void NoOptimize(Baa[] arr)
         {
-            var num = array.Select(x => x.Index).Where(x => x % 2 == 0).Select(x => x * 2);
+            var num = arr.Select(x => x.Index).Where(x => x % 2 == 0).Select(x => x * 2).ToList();
         }
 
         //[Optimize]
@@ -34,7 +35,7 @@ namespace _Script
             var stopWatch = new Stopwatch();
             
             stopWatch.Start();
-            NoOptimize();
+            NoOptimize(array);
             stopWatch.Stop();
             Debug.Log($"Non : {stopWatch.Elapsed.ToString()}");
             
